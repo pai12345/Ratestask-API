@@ -1,4 +1,9 @@
-from flask import Blueprint, request
+""" Module for API routes.
+
+    Module has API implementation details, paths, business functionalities and informations.
+"""
+
+from flask import Blueprint, request, Response
 from src.ratestask.packages.prices.prices import prices
 from src.ratestask.packages.ports.ports import ports
 from src.ratestask.packages.prices.prices import helper
@@ -8,68 +13,166 @@ router = Blueprint('/', __name__)
 
 @router.route('/rates', methods=['GET'])
 def rates():
+    """API for fetching average prices.
+
+       API returns a list with the average prices for each day on a route between port codes origin and destination.
+
+      Parameters:
+      - date_from: begin date,
+        type: string,
+        required: true,
+        description: Indicated the begin date.
+      - date_to: to date,
+        type: string,
+        required: true,
+        description: Indicated the end date.
+      - origin: origin code,
+        type: string,
+        required: true,
+        description: Indicated origin code accepting either port codes or region slugs.
+      - destination: destination code,
+        type: string,
+        required: true,
+        description: Indicates destination code accepting either port codes or region slugs.
+
+       Returns:
+        list: average prices for each day.
+    """
     try:
         date_from = request.args.get('date_from', type=str)
         date_to = request.args.get('date_to', type=str)
         origin = request.args.get('origin', type=str)
         destination = request.args.get('destination', type=str)
 
-        check_url_params_status, check_url_params = helper.validate_params(
+        validate_params = helper.validate_params(
             date_from, date_to, origin, destination)
+        check_url_params_status = validate_params["status"]
+        check_url_params = validate_params["message"]
 
         if(check_url_params_status == "success"):
-            check_equality_status, check_equality_check = helper.validate_equality_check(
+            validate_equality_check = helper.validate_equality_check(
                 origin, destination)
+            check_equality_status = validate_equality_check["status"]
+            check_equality_check = validate_equality_check["message"]
 
             if(check_equality_status == "success"):
-                _, query_recursion = helper.generate_query_recursion(
+                generate_query_recursion = helper.generate_query_recursion(
                     destination)
-                _, query_rates_null = helper.generate_query_rates(
+                query_recursion = generate_query_recursion["message"]
+
+                generate_query_rates = helper.generate_query_rates(
                     date_from, date_to, origin, destination)
-                _, average_rate = prices.average_rates(
+                query_rates_null = generate_query_rates["message"]
+
+                average_rates = prices.average_rates(
                     query_recursion, query_rates_null)
-                return average_rate
+                return Response(average_rates["message"], status=200)
             else:
-                return check_equality_check
+                return Response(check_equality_check, status=400)
         else:
-            return check_url_params
+            return Response(f"""{check_url_params}""", status=400)
     except BaseException as error:
         raise error
 
 
 @router.route('/rates_null', methods=['GET'])
 def rates_null():
+    """API for fetching average prices.
+
+       API endpoint return an empty value (JSON null) for days on which there are less than 3 prices in total.
+
+      Parameters:
+       - date_from: begin date,
+         type: string,
+         required: true,
+         description: Indicated the begin date.
+       - date_to: to date,
+         type: string,
+         required: true,
+         description: Indicated the end date.
+       - origin: origin code,
+         type: string,
+         required: true,
+         description: Indicated origin code accepting either port codes or region slugs.
+       - destination: destination code,
+         type: string,
+         required: true,
+         description: Indicates destination code accepting either port codes or region slugs.
+
+       Returns:
+        list: average prices for each day.
+    """
     try:
         date_from = request.args.get('date_from', type=str)
         date_to = request.args.get('date_to', type=str)
         origin = request.args.get('origin', type=str)
         destination = request.args.get('destination', type=str)
 
-        check_url_params_status, check_url_params = helper.validate_params(
+        check_url = helper.validate_params(
             date_from, date_to, origin, destination)
 
+        check_url_params_status = check_url["status"]
+        check_url_params = check_url["message"]
+
         if(check_url_params_status == "success"):
-            check_equality_check_status, check_equality_check = helper.validate_equality_check(
+            validate_equality_check = helper.validate_equality_check(
                 origin, destination)
+            check_equality_check_status = validate_equality_check["status"]
+            check_equality_check = validate_equality_check["message"]
 
             if(check_equality_check_status == "success"):
-                _, query_recursion = helper.generate_query_recursion(
+                generate_query_recursion = helper.generate_query_recursion(
                     destination)
-                _, query_rates_null = helper.generate_query_ratesnull(
+                query_recursion = generate_query_recursion["message"]
+
+                generate_query_ratesnull = helper.generate_query_ratesnull(
                     date_from, date_to, origin, destination)
-                _, average_rate = prices.average_rates(
+                query_rates_null = generate_query_ratesnull["message"]
+
+                average_rates = prices.average_rates(
                     query_recursion, query_rates_null)
-                return average_rate
+
+                return Response(average_rates["message"], status=200)
             else:
-                return check_equality_check
+                return Response(check_equality_check, status=400)
         else:
-            return check_url_params
+            return Response(f"""{check_url_params}""", status=400)
     except BaseException as error:
         raise error
 
 
 @router.route('/price', methods=['POST'])
 def price():
+    """API for uploding prices.
+
+       API endpoint for uploading prices in USD for the given date range.
+
+       Parameters:
+       - date_from: begin date,
+         type: string,
+         required: true,
+         description: Indicated the begin date.
+       - date_to: to date,
+         type: string,
+         required: true,
+         description: Indicated the end date.
+       - origin: origin code,
+         type: string,
+         required: true,
+         description: Indicated origin code accepting either port codes or region slugs.
+       - destination: destination code,
+         type: string,
+         required: true,
+         description: Indicated destination code accepting either port codes or region slugs.
+       - price: price,
+         currency: USD by default,
+         type: string,
+         required: true,
+         description: Indicates the price.
+
+       Returns:
+        str: message for success or failure.
+    """
     try:
         price_usd = None
         date_from = request.json.get('date_from')
@@ -79,34 +182,44 @@ def price():
         price = request.json.get('price')
         currency = request.json.get('currency')
 
-        check_url_params_status, check_url_params = helper.validate_params(
+        validate_params = helper.validate_params(
             date_from, date_to, origin, destination)
 
+        check_url_params_status = validate_params["status"]
+        check_url_params = validate_params["message"]
+
         if(check_url_params_status == "success"):
-            check_equality_check_status, check_equality_check = helper.validate_equality_check(
+            validate_equality_check = helper.validate_equality_check(
                 origin, destination)
+            check_equality_check_status = validate_equality_check["status"]
+            check_equality_check = validate_equality_check["message"]
 
             if(check_equality_check_status == "success"):
-                check_ports_status, check_ports = ports.check_ports(
+                check_ports_code = ports.check_ports(
                     origin, destination)
+                check_ports_status = check_ports_code["status"]
+                check_ports = check_ports_code["message"]
 
                 if(check_ports_status == "success"):
-                    _, price_usd = prices.get_price(price, currency)
+                    get_price = prices.get_price(price, currency)
+                    price_usd = get_price["message"]
 
-                    _, get_date_range = helper.get_date_range(
+                    get_range = helper.get_date_range(
                         date_from, date_to)
+                    get_date_range = get_range["message"]
 
-                    _, get_pricing_payload = prices.generate_price_payload(
+                    generate_price_payload = prices.generate_price_payload(
                         get_date_range, origin, destination, price_usd)
+                    get_pricing_payload = generate_price_payload["message"]
 
-                    _, upload_price_database = prices.upload_price(
+                    upload_price_database = prices.upload_price(
                         get_pricing_payload)
-                    return upload_price_database
+                    return Response(upload_price_database["message"], status=201)
                 else:
-                    return check_ports
+                    return Response(check_ports, status=400)
             else:
-                return check_equality_check
+                return Response(check_equality_check, status=400)
         else:
-            return check_url_params
+            return Response(check_url_params, status=400)
     except BaseException as error:
         raise error

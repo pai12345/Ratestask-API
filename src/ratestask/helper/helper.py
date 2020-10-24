@@ -1,4 +1,8 @@
-from os import error
+""" Module for assist API.
+
+    Module has implementation details, functionalities and informations for assisting APIs.
+"""
+
 from psycopg2 import pool, DatabaseError
 import yaml
 from datetime import timedelta, date, datetime
@@ -6,7 +10,26 @@ from cerberus import Validator
 
 
 class Helper:
-    def get_database_url(self, type):
+    """ Helper Class
+
+        Class contains the core implementation details, functionalities and informations for assisting APIs.
+    """
+
+    def get_url(self, type):
+        """Fetch URL
+
+           Function for fetching URL for database or openexchangerates API.
+
+           Parameters:
+            - type: type of information,
+              type: string,
+              required: true,
+              description: Inforamtion for generating URL.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: URL Address.
+        """
         result = None
         try:
             with open("src/ratestask/config/config.yml") as file:
@@ -22,6 +45,20 @@ class Helper:
             raise error
 
     def create_connection_pool(self, url):
+        """Create Connection Pool
+
+           Function for creating database connection pool.
+
+           Parameters:
+            - url: url address,
+              type: string,
+              required: true,
+              description: Inforamtion for generating connection pool.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: new pool of connection.
+        """
         try:
             create_pool = pool.SimpleConnectionPool(
                 1, 20, url)
@@ -30,6 +67,19 @@ class Helper:
             raise error
 
     def close_connection_pool(self, connection_pool):
+        """Close Connection Pool
+
+           Function for closing existing database connection pool.
+
+           Parameters:
+            - connection_pool: connection pool,
+              required: true,
+              description: Inforamtion of existing connection pool.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: Information of closed connection pool.
+        """
         try:
             close_pool = connection_pool.closeall()
             return {"status": "success", "message": close_pool}

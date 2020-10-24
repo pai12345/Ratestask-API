@@ -12,17 +12,23 @@ class Prices:
         message = None
         result = None
         try:
-            _, url_message = helper.get_database_url("database")
+            get_url = helper.get_url("database")
+            url = get_url["message"]
 
-            connection_pool_status, connection_pool_message = helper.create_connection_pool(
-                url_message)
+            create_connection_pool = helper.create_connection_pool(url)
+            connection_pool_status = create_connection_pool["status"]
+            connection_pool_message = create_connection_pool["message"]
 
-            connection_object_status, connection_object_messsage = helper.get_connection_object(
+            get_connection_object = helper.get_connection_object(
                 connection_pool_message)
+            connection_object_status = get_connection_object["status"]
+            connection_object_messsage = get_connection_object["message"]
 
             if(connection_object_status == "success"):
-                _, cursor = helper.create_connection_cursor(
+                create_connection_cursor = helper.create_connection_cursor(
                     connection_object_messsage)
+                cursor = create_connection_cursor["message"]
+
                 cursor.execute(
                     f"""
                    {query_recursion}
@@ -58,18 +64,26 @@ class Prices:
         status = None
         message = None
         try:
-            _, url_message = helper.get_database_url("database")
-            connection_pool_status, connection_pool_message = helper.create_connection_pool(
-                url_message)
+            get_url = helper.get_url("database")
+            url = get_url["message"]
 
-            connection_object_status, connection_object_message = helper.get_connection_object(
+            create_connection_pool = helper.create_connection_pool(url)
+            connection_pool_status = create_connection_pool["status"]
+            connection_pool_message = create_connection_pool["message"]
+
+            get_connection_object = helper.get_connection_object(
                 connection_pool_message)
+            connection_object_status = get_connection_object["status"]
+            connection_object_message = get_connection_object["message"]
 
-            _, query_upload_price = helper.generate_query_uploadprice()
+            generate_query_uploadprice = helper.generate_query_uploadprice()
+            query_upload_price = generate_query_uploadprice["message"]
 
             if(connection_object_status == "success"):
-                _, cursor = helper.create_connection_cursor(
+                create_connection_cursor = helper.create_connection_cursor(
                     connection_object_message)
+                cursor = create_connection_cursor["message"]
+
                 extras.execute_values(
                     cursor, query_upload_price, payload)
                 result = cursor.fetchall()
@@ -99,10 +113,10 @@ class Prices:
             elif(currency == None):
                 price_usd = price
             else:
-                _, exchange_rate = service.openexchangerates_service(currency)
-                _, price_usd = helper.connvert_to_USD(
-                    price, exchange_rate)
-            return {"status": "success", "message": price_usd}
+                exchange_rate = service.openexchangerates_service(currency)
+                price_usd = helper.connvert_to_USD(
+                    price, exchange_rate["message"])
+            return {"status": "success", "message": price_usd["message"]}
         except BaseException as error:
             raise error
 
