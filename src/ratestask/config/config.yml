@@ -1,0 +1,11 @@
+database:
+  type: "postgresql"
+  name: "postgres"
+  user: "postgres"
+  password: "ratestask"
+  address: localhost
+  port: "5432"
+
+openexchangerates: 
+  address: openexchangerates.org/api/latest.json
+  app_id: 9ff3363bb3704b8b90433b5a0a1e50dd
