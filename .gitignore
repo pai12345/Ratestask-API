@@ -1,3 +1,6 @@
-.vscode/
-__pycache__/
+#folders
+/.vscode
+/__pycache__
+
+#misc
 .DS_Store

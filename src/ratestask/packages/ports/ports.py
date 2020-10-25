@@ -1,13 +1,41 @@
+""" Module for ports.
+
+    Module has implementation details, business functionalities and informations for ports.
+"""
 from src.ratestask.helper.helper import helper
 from psycopg2 import DatabaseError
 
 
 class Ports:
+    """ Ports Class
+
+        Class contains the core implementation details, functionalities and informations for ports.
+    """
+
     def check_ports(self, origin, destination):
+        """Fetch URL
+
+           Function for checking ports for origin and destination.
+
+           Parameters:
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: Inforamtion for origin code.
+            - destination: destination code,
+              type: string,
+              required: true,
+              description: Inforamtion for destination code.
+
+           Returns:
+             status: status of the request-response cycle.
+             message: Information of success or failure.
+        """
         connection_pool = None
         connection_pool_status = None
-        validate_result = None
+
         try:
+            validate_result = None
             get_url = helper.get_url("database")
             url = get_url["message"]
 

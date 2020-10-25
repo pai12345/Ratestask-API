@@ -1,3 +1,5 @@
+#Configuration details for database and openexchangerates.
+
 database:
   type: "postgresql"
   name: "postgres"

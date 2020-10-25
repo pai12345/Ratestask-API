@@ -39,38 +39,51 @@ def rates():
         list: average prices for each day.
     """
     try:
-        date_from = request.args.get('date_from', type=str)
-        date_to = request.args.get('date_to', type=str)
-        origin = request.args.get('origin', type=str)
-        destination = request.args.get('destination', type=str)
+        precheck_parameters = helper.precheck_parameters(
+            request.args.to_dict())
+        precheck_status = precheck_parameters["status"]
+        precheck_message = precheck_parameters["message"]
+        if(precheck_status == "success"):
+            date_from = request.args.get('date_from', type=str)
+            date_to = request.args.get('date_to', type=str)
+            origin = request.args.get('origin', type=str)
+            destination = request.args.get('destination', type=str)
 
-        validate_params = helper.validate_params(
-            date_from, date_to, origin, destination)
-        check_url_params_status = validate_params["status"]
-        check_url_params = validate_params["message"]
+            payload = {
+                "date_from": date_from,
+                "date_to": date_to,
+                "origin": origin,
+                "destination": destination
+            }
 
-        if(check_url_params_status == "success"):
-            validate_equality_check = helper.validate_equality_check(
-                origin, destination)
-            check_equality_status = validate_equality_check["status"]
-            check_equality_check = validate_equality_check["message"]
+            validate_params = helper.validate_params(payload, "rates")
+            check_url_params_status = validate_params["status"]
+            check_url_params = validate_params["message"]
 
-            if(check_equality_status == "success"):
-                generate_query_recursion = helper.generate_query_recursion(
-                    destination)
-                query_recursion = generate_query_recursion["message"]
+            if(check_url_params_status == "success"):
+                validate_equality_check = helper.validate_equality_check(
+                    origin, destination)
+                check_equality_status = validate_equality_check["status"]
+                check_equality_check = validate_equality_check["message"]
 
-                generate_query_rates = helper.generate_query_rates(
-                    date_from, date_to, origin, destination)
-                query_rates_null = generate_query_rates["message"]
+                if(check_equality_status == "success"):
+                    generate_query_recursion = helper.generate_query_recursion(
+                        destination)
+                    query_recursion = generate_query_recursion["message"]
 
-                average_rates = prices.average_rates(
-                    query_recursion, query_rates_null)
-                return Response(average_rates["message"], status=200)
+                    generate_query_rates = helper.generate_query_rates(
+                        date_from, date_to, origin, destination)
+                    query_rates_null = generate_query_rates["message"]
+
+                    average_rates = prices.average_rates(
+                        query_recursion, query_rates_null)
+                    return Response(average_rates["message"], status=200)
+                else:
+                    return Response(check_equality_check, status=400)
             else:
-                return Response(check_equality_check, status=400)
+                return Response(f"""{check_url_params}""", status=400)
         else:
-            return Response(f"""{check_url_params}""", status=400)
+            return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
         raise error
 
@@ -103,40 +116,53 @@ def rates_null():
         list: average prices for each day.
     """
     try:
-        date_from = request.args.get('date_from', type=str)
-        date_to = request.args.get('date_to', type=str)
-        origin = request.args.get('origin', type=str)
-        destination = request.args.get('destination', type=str)
+        precheck_parameters = helper.precheck_parameters(
+            request.args.to_dict())
+        precheck_status = precheck_parameters["status"]
+        precheck_message = precheck_parameters["message"]
 
-        check_url = helper.validate_params(
-            date_from, date_to, origin, destination)
+        if(precheck_status == "success"):
+            date_from = request.args.get('date_from', type=str)
+            date_to = request.args.get('date_to', type=str)
+            origin = request.args.get('origin', type=str)
+            destination = request.args.get('destination', type=str)
 
-        check_url_params_status = check_url["status"]
-        check_url_params = check_url["message"]
+            payload = {
+                "date_from": date_from,
+                "date_to": date_to,
+                "origin": origin,
+                "destination": destination
+            }
 
-        if(check_url_params_status == "success"):
-            validate_equality_check = helper.validate_equality_check(
-                origin, destination)
-            check_equality_check_status = validate_equality_check["status"]
-            check_equality_check = validate_equality_check["message"]
+            check_url = helper.validate_params(payload, "rates")
+            check_url_params_status = check_url["status"]
+            check_url_params = check_url["message"]
 
-            if(check_equality_check_status == "success"):
-                generate_query_recursion = helper.generate_query_recursion(
-                    destination)
-                query_recursion = generate_query_recursion["message"]
+            if(check_url_params_status == "success"):
+                validate_equality_check = helper.validate_equality_check(
+                    origin, destination)
+                check_equality_check_status = validate_equality_check["status"]
+                check_equality_check = validate_equality_check["message"]
 
-                generate_query_ratesnull = helper.generate_query_ratesnull(
-                    date_from, date_to, origin, destination)
-                query_rates_null = generate_query_ratesnull["message"]
+                if(check_equality_check_status == "success"):
+                    generate_query_recursion = helper.generate_query_recursion(
+                        destination)
+                    query_recursion = generate_query_recursion["message"]
 
-                average_rates = prices.average_rates(
-                    query_recursion, query_rates_null)
+                    generate_query_ratesnull = helper.generate_query_ratesnull(
+                        date_from, date_to, origin, destination)
+                    query_rates_null = generate_query_ratesnull["message"]
 
-                return Response(average_rates["message"], status=200)
+                    average_rates = prices.average_rates(
+                        query_recursion, query_rates_null)
+
+                    return Response(average_rates["message"], status=200)
+                else:
+                    return Response(check_equality_check, status=400)
             else:
-                return Response(check_equality_check, status=400)
+                return Response(f"""{check_url_params}""", status=400)
         else:
-            return Response(f"""{check_url_params}""", status=400)
+            return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
         raise error
 
@@ -182,9 +208,16 @@ def price():
         price = request.json.get('price')
         currency = request.json.get('currency')
 
-        validate_params = helper.validate_params(
-            date_from, date_to, origin, destination)
+        payload = {
+            "date_from": date_from,
+            "date_to": date_to,
+            "origin": origin,
+            "destination": destination,
+            "price": price,
+            "currency": currency
+        }
 
+        validate_params = helper.validate_params(payload, "price")
         check_url_params_status = validate_params["status"]
         check_url_params = validate_params["message"]
 

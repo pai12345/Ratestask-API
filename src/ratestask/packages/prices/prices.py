@@ -1,3 +1,7 @@
+""" Module for prices.
+
+    Module has implementation details, business functionalities and informations for prices.
+"""
 from src.ratestask.helper.helper import helper
 from src.ratestask.api.service.service import service
 from psycopg2 import DatabaseError, extras
@@ -5,13 +9,36 @@ import json
 
 
 class Prices:
+    """ Prices Class.
+
+        Class contains the core implementation details, functionalities and informations for prices.
+    """
+
     def average_rates(self, query_recursion, query_rates):
+        """ Get average prices.
+
+            Get average prices for each day on a route between port codes origin and destination.
+
+            Parameters:
+            - query_recursion: recursion query,
+              type: query,
+              required: true,
+              description: query for recursion
+            - query_rates: rates query,
+              type: query,
+              required: true,
+              description: query for average rates
+
+            Returns:
+             status: status of the request-response cycle.
+             message: list of average prices.
+        """
         connection_pool_message = None
         connection_pool_status = None
-        status = None
-        message = None
-        result = None
         try:
+            result = None
+            status = None
+            message = None
             get_url = helper.get_url("database")
             url = get_url["message"]
 
@@ -50,20 +77,61 @@ class Prices:
             if (connection_pool_status == "success"):
                 helper.close_connection_pool(connection_pool_message)
 
-    def generate_price_payload(self, dats, origin, destination, price):
+    def generate_price_payload(self, date_range, origin, destination, price):
+        """ Generate payload.
+
+            Generate payload containing details of required fields for price.
+
+            Parameters:
+            - date_range: date range,
+              type: string,
+              required: true,
+              description: list of date range.
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: Information of origin code.
+            - destination: destination code,
+              type: string,
+              required: true,
+              description: Information of destination code.
+            - price: price,
+              type: string,
+              required: true,
+              description: Information of price.
+
+            Returns:
+             status: status of the request-response cycle.
+             message: payload having required fields and values.
+        """
         try:
             result = []
-            [result.append((origin, destination, i, price)) for i in dats]
+            [result.append((origin, destination, i, price))
+             for i in date_range]
             return {"status": "success", "message": result}
         except BaseException as error:
             raise error
 
     def upload_price(self, payload):
+        """Upload price.
+
+           Function to upload price.
+
+          Parameters:
+           - payload: payload data, 
+             type: list,
+             required: true,
+             description: list structured with required fields and data for uploading.
+
+          Returns:
+           status: status of the request-response cycle.
+           message: Information of success or error.
+        """
         connection_pool_message = None
         connection_pool_status = None
-        status = None
-        message = None
         try:
+            status = None
+            message = None
             get_url = helper.get_url("database")
             url = get_url["message"]
 
@@ -106,6 +174,25 @@ class Prices:
                 helper.close_connection_pool(connection_pool_message)
 
     def get_price(self, price, currency):
+        """Get price.
+
+           Function to fetch price in USD.
+
+          Parameters:
+           - price: price type, 
+             type: integer,
+             required: true,
+             description: Indicates price.
+           - currency: currency type,
+             default: USD, 
+             type: string,
+             required: true,
+             description: Indicates different currency type.
+
+          Returns:
+           status: status of the request-response cycle.
+           message: price in USD.
+        """
         try:
             price_usd = None
             if(currency == 'USD'):

@@ -3,6 +3,7 @@
     Module has implementation details, functionalities and informations for assisting APIs.
 """
 
+from os import error
 from psycopg2 import pool, DatabaseError
 import yaml
 from datetime import timedelta, date, datetime
@@ -27,8 +28,8 @@ class Helper:
               description: Inforamtion for generating URL.
 
            Returns:
-            status: status of the request-response cycle.
-            message: URL Address.
+             status: status of the request-response cycle.
+             message: URL Address.
         """
         result = None
         try:
@@ -56,8 +57,8 @@ class Helper:
               description: Inforamtion for generating connection pool.
 
            Returns:
-            status: status of the request-response cycle.
-            message: new pool of connection.
+             status: status of the request-response cycle.
+             message: new pool of connection.
         """
         try:
             create_pool = pool.SimpleConnectionPool(
@@ -77,8 +78,8 @@ class Helper:
               description: Inforamtion of existing connection pool.
 
            Returns:
-            status: status of the request-response cycle.
-            message: Information of closed connection pool.
+             status: status of the request-response cycle.
+             message: close exisitng connection pool.
         """
         try:
             close_pool = connection_pool.closeall()
@@ -87,6 +88,19 @@ class Helper:
             raise error
 
     def get_connection_object(self, connection_pool):
+        """Get Connection
+
+           Function for fetching connection from pool.
+
+           Parameters:
+            - connection_pool: connection pool,
+              required: true,
+              description: Inforamtion of existing connection pool.
+
+           Returns:
+             status: status of the request-response cycle.
+             message: a new connection object from connection pool.
+        """
         try:
             get_connection = connection_pool.getconn()
             return {"status": "success", "message": get_connection}
@@ -94,6 +108,20 @@ class Helper:
             raise error
 
     def release_connection_object(self, connection_pool, connection_object):
+        """Release connection.
+
+           Function for releasing existing connection from pool.
+
+           Parameters:
+            - connection_object: connection from connection pool,
+              type: string,
+              required: true,
+              description: contains connection from connection pool.
+
+           Returns:
+             status: status of the request-response cycle.
+             message: release existing connection object to pool.
+        """
         try:
             release = connection_pool.putconn(connection_object)
             return {"status": "success", "message": release}
@@ -101,6 +129,20 @@ class Helper:
             raise error
 
     def create_connection_cursor(self, connection_object):
+        """Create cursor.
+
+           Function for creating new cursor object.
+
+           Parameters:
+            - connection_object: connection from pool,
+              type: string,
+              required: true,
+              description: contains connection from pool.
+
+           Returns:
+             status: status of the request-response cycle.
+             message: new cursor object.
+        """
         try:
             cursor = connection_object.cursor()
             return {"status": "success", "message": cursor}
@@ -108,6 +150,20 @@ class Helper:
             raise error
 
     def close_connection_cursor(self, connection_cursor):
+        """Close cursor.
+
+           Function for closing existing cursor object.
+
+           Parameters:
+            - connection_cursor: cursor for psycopg2,
+              type: string,
+              required: true,
+              description: contains cursor object for psycopg2.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: close existing cursor object.
+        """
         try:
             cursor_close = connection_cursor.close()
             return {"status": "success", "message": cursor_close}
@@ -115,6 +171,20 @@ class Helper:
             raise error
 
     def generate_query_recursion(self, slug):
+        """Query for recursion.
+
+           Function for generating query for recursion.
+
+           Parameters:
+            - slug: destination code,
+              type: string,
+              required: true,
+              description: contains destination code.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: query for recursion.
+        """
         try:
             message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
             return {"status": "success", "message": message}
@@ -122,6 +192,32 @@ class Helper:
             raise error
 
     def generate_query_rates(self, date_from, date_to, origin, destination):
+        """Query for rates API.
+
+           Function for generating query returning a list with the average prices for each day on a route between port codes origin and destination.
+
+           Parameters:
+            - date_from: begin date,
+              type: string,
+              required: true,
+              description: contains begin date.
+            - date_to: end date,
+              type: string,
+              required: true,
+              description: contains end date.
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: contains origin code.
+            - destination: destination code,
+              type: string,
+              required: true,
+              description: contains destination code.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: query for rates.
+        """
         try:
             message = f"""SELECT json_agg(json_build_object('day', day, 'average_price', price)) as result FROM(SELECT day, AVG(price) price FROM public.prices WHERE DAY BETWEEN '{date_from}' AND '{date_to}' AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from a)) AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select slug from a)) GROUP BY DAY ORDER BY DAY ASC) as sub"""
             return{"status": "success", "message": message}
@@ -129,6 +225,32 @@ class Helper:
             raise error
 
     def generate_query_ratesnull(self, date_from, date_to, origin, destination):
+        """Query for rates_null API.
+
+           Function for generating query for returning an empty value (JSON null) for days on which there are less than 3 prices in total.
+
+           Parameters:
+            - date_from: begin date,
+              type: string,
+              required: true,
+              description: contains begin date.
+            - date_to: end date,
+              type: string,
+              required: true,
+              description: contains end date.
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: contains origin code.
+            - destination: destination code,
+              type: string,
+              required: true,
+              description: contains destination code.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: query for rates.
+        """
         try:
             message = f"""
 SELECT json_agg(json_build_object('day', day, 'average_price', average_price)) as result FROM(SELECT day,
@@ -149,6 +271,14 @@ ORDER BY DAY ASC) as sub
             raise error
 
     def generate_query_portcheck(self):
+        """Query for port check.
+
+           Function for generating query for port check.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: query for port check.
+        """
         try:
             message = f"""SELECT json_agg(json_build_object('code',code)) as result from public.ports where code in %s"""
             return {"status": "success", "message": message}
@@ -156,6 +286,14 @@ ORDER BY DAY ASC) as sub
             raise error
 
     def generate_query_uploadprice(self):
+        """Query for upload price.
+
+           Function for generating query on upload price.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: query of upload price
+        """
         try:
             message = f"""insert into public.prices (orig_code, dest_code, day, price) values %s RETURNING price"""
             return {"status": "success", "message": message}
@@ -163,6 +301,24 @@ ORDER BY DAY ASC) as sub
             raise error
 
     def get_date_range(self, start_date, end_date):
+        """Get date range.
+
+           Function for fetching date range.
+
+           Parameters:
+            - start_date: begin date,
+              type: string,
+              required: true,
+              description: contains begin date.
+            - exchange_rate: end date,
+              type: string,
+              required: true,
+              description: contains end date.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains date ranges
+        """
         try:
             Dats = list()
             start = datetime.strptime(start_date, '%Y-%m-%d')
@@ -176,6 +332,24 @@ ORDER BY DAY ASC) as sub
             raise error
 
     def connvert_to_USD(self, price, exchange_rate):
+        """Convert currency to USD.
+
+           Function for converting existing currency type to USD.
+
+           Parameters:
+            - price: price,
+              type: integer,
+              required: true,
+              description: Information on price.
+            - exchange_rate: exchange rate,
+              type: integer,
+              required: true,
+              description: Information of currency exchange rate.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: rounded-off price in USD.
+        """
         try:
             price_USD = price/exchange_rate
             price_roundoff = round(price_USD)
@@ -183,38 +357,114 @@ ORDER BY DAY ASC) as sub
         except BaseException as error:
             raise error
 
-    def validate_params(self, date_from, date_to, origin, destination):
+    def validate_params(self, payload, category):
+        """Validates url params and payload.
+
+           Function for validateing request url parameters and request payload.
+
+           Parameters:
+            - payload: request data,
+              type: dictionary,
+              required: true,
+              description: contains request payload as a dictionary.
+            - category: information,
+              type: string,
+              required: true,
+              description: Inforamtion for validation category.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains success or error messages.
+        """
         try:
-            schema = {'date_from': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
-                      'date_to': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
-                      'origin': {'required': True, 'type': 'string'},
-                      'destination': {'required': True, 'type': 'string'}}
-            payload = {
-                'date_from': date_from,
-                'date_to': date_to,
-                'origin': origin,
-                'destination': destination}
+            schema = None
+            status = None
+            message = None
+            if(category == "price"):
+                schema = {'date_from': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
+                          'date_to': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
+                          'origin': {'required': True, 'type': 'string'},
+                          'destination': {'required': True, 'type': 'string'},
+                          'price': {'required': True, 'type': 'integer'},
+                          'currency': {'type': 'string'}}
+            elif(category == "rates"):
+                schema = {'date_from': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
+                          'date_to': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
+                          'origin': {'required': True, 'type': 'string'},
+                          'destination': {'required': True, 'type': 'string'}}
+            else:
+                return {"status": "error", "message": "Invalid parameters passed for Validation"}
 
             check_data = Validator(schema)
             test = check_data.validate(payload)
-            if(test):
-                return {"status": "success", "message": "valid"}
+            if(test == True):
+                if(payload["date_from"] > payload["date_to"]):
+                    status = "error"
+                    message = "date_from cannot be greater than date_to."
+                elif(payload["date_from"] == payload["date_to"]):
+                    status = "error"
+                    message = "date_from cannot be equal to date_to."
+                else:
+                    status = "success"
+                    message = "valid"
             else:
-                return {"status": "error", "message": check_data.errors}
+                status = "error"
+                message = check_data.errors
+            return {"status": status, "message": message}
         except BaseException as error:
             raise error
 
     def validate_equality_check(self, origin, destination):
+        """Equality Check.
+
+           Function for checking equality for origin and destination.
+
+           Parameters:
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: contains origin code.
+            - destination: destination code,
+              type: string,
+              required: true,
+              description: contains destination code.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains success or error messages.
+        """
         try:
+            status = None
+            message = None
             if (origin == destination):
-                return {"status": "error",
-                        "message": "origin and destination cannot be same"}
+                status = "error"
+                message = "origin and destination cannot be same."
             else:
-                return {"status": "success", "message": "valid"}
+                status = "success"
+                message = "valid"
+            return {"status": status, "message": message}
         except BaseException as error:
             raise error
 
     def validate_ports_types(self, origin, result):
+        """Validate ports.
+
+           Function for checking equality for origin and destination.
+
+           Parameters:
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: contains origin code.
+            - result: result,
+              type: string,
+              required: true,
+              description: database query results of ports for origin and destination.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains success or error messages.
+        """
         status = None
         message = None
         try:
@@ -232,6 +482,33 @@ ORDER BY DAY ASC) as sub
             else:
                 status = "error"
                 message = "No origin and destination codes present"
+            return {"status": status, "message": message}
+        except BaseException as error:
+            raise error
+
+    def precheck_parameters(self, payload):
+        try:
+            status = None
+            message = None
+            if(len(payload) == 4):
+                accept = ["date_from", "date_to", "origin", "destination"]
+                check = [i for i in payload]
+                if(accept == check):
+                    # if(payload["date_from"] > payload["date_to"]):
+                    #     status = "error"
+                    #     message = "date_from cannot be greater than date_to."
+                    # elif(payload["date_from"] == payload["date_to"]):
+                    #     status = "error"
+                    #     message = "date_from cannot be equal to date_to."
+                    # else:
+                    status = "success"
+                    message = "valid"
+                else:
+                    status = "error"
+                    message = "Invalid, allowed parameters are date_from, date_to, origin and destination."
+            else:
+                status = "error"
+                message = "Invalid URL parameters"
             return {"status": status, "message": message}
         except BaseException as error:
             raise error

@@ -1,6 +1,6 @@
-""" Xeneta ratestask API 
+""" Xeneta's Rate API task
 
-    Application having details, functionality and information for fetcing average prices and uploading prices. 
+    Application having details, functionality and information for fetcing average prices and uploading prices.
 """
 
 from flask import Flask, Response
