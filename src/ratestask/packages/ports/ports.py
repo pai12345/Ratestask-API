@@ -1,12 +1,13 @@
-""" Module for ports.
+""" Module for Ports.
 
     Module has implementation details, business functionalities and informations for ports.
 """
 from src.ratestask.helper.helper import helper
 from psycopg2 import DatabaseError
+from src.ratestask.packages.ports.ports_proto import ProtoPorts
 
 
-class Ports:
+class Ports(ProtoPorts):
     """ Ports Class
 
         Class contains the core implementation details, functionalities and informations for ports.

@@ -5,9 +5,10 @@
 from requests import get
 import json
 from src.ratestask.helper.helper import helper
+from src.ratestask.api.service.service_proto import ProtoService
 
 
-class Service:
+class Service(ProtoService):
     def openexchangerates_service(self, currency):
         """API for currency conversion.
 

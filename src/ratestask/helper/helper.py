@@ -1,14 +1,15 @@
 """ Module for assist API.
 
-    Module has implementation details, functionalities and informations for assisting APIs.
+    Module has implementation details, functionalities and informations for assisting classes and methods.
 """
 from psycopg2 import pool, DatabaseError
 import yaml
 from datetime import timedelta, datetime
 from cerberus import Validator
+from src.ratestask.helper.helper_proto import ProtoHelper
 
 
-class Helper:
+class Helper(ProtoHelper):
     """ Helper Class
 
         Class contains the core implementation details, functionalities and informations for assisting APIs.
@@ -485,6 +486,20 @@ ORDER BY DAY ASC) as sub
             return {"status": "error", "message": f"""Encountered Error while validating port types:{error}"""}
 
     def precheck_parameters(self, payload):
+        """Precheck all parameters.
+
+           Function for pre-checking all payload parameters.
+
+           Parameters:
+            - payload: payload data,
+              type: dictionary,
+              required: true,
+              description: contains key-value pairs.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains success or error messages.
+        """
         try:
             status = None
             message = None
@@ -504,7 +519,21 @@ ORDER BY DAY ASC) as sub
         except BaseException as error:
             return {"status": "error", "message": f"""Encountered Error while prechecking parameters:{error}"""}
 
-    def precheck_sqlinjection(self, payload):
+    def check_sqlinjection(self, payload):
+        """check for SQL injections.
+
+           Function for checking all parameters for sql injection.
+
+           Parameters:
+            - payload: payload data,
+              type: dictionary,
+              required: true,
+              description: contains key-value pairs.
+
+           Returns:
+            status: status of the request-response cycle.
+            message: contains success or error messages.
+        """
         try:
             status = None
             message = None
@@ -514,11 +543,11 @@ ORDER BY DAY ASC) as sub
             validate = [True if i in blacklist else False for i in data]
             check = True in validate
             if(check):
-                status = "success"
-                message = "valid"
-            else:
                 status = "error"
                 message = "Invalid parameters present"
+            else:
+                status = "success"
+                message = "valid"
             return {"status": status, "message": message}
         except BaseException as error:
             return {"status": "error", "message": f"""Encountered Error while validating for SQL injection:{error}"""}

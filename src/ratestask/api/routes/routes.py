@@ -62,11 +62,11 @@ def rates():
             check_url_params = validate_params["message"]
 
             if(check_url_params_status == "success"):
-                precheck_sqlinjection = helper.precheck_sqlinjection(payload)
-                precheck_sqlinjection_status = precheck_sqlinjection["status"]
-                precheck_sqlinjection_message = precheck_sqlinjection["message"]
+                check_sqlinjection = helper.check_sqlinjection(payload)
+                check_sqlinjection_status = check_sqlinjection["status"]
+                check_sqlinjection_message = check_sqlinjection["message"]
 
-                if(precheck_sqlinjection_status == "success"):
+                if(check_sqlinjection_status == "success"):
                     validate_equality_check = helper.validate_equality_check(
                         origin, destination)
                     check_equality_status = validate_equality_check["status"]
@@ -88,13 +88,13 @@ def rates():
                     else:
                         return Response(check_equality_check, status=400)
                 else:
-                    return Response(f"""{precheck_sqlinjection_message}""", status=400)
+                    return Response(f"""{check_sqlinjection_message}""", status=400)
             else:
                 return Response(f"""{check_url_params}""", status=400)
         else:
             return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
-        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates :{error}"""}
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates: {error}"""}
 
 
 @router.route('/rates_null', methods=['GET'])
@@ -148,11 +148,11 @@ def rates_null():
             check_url_params = check_url["message"]
 
             if(check_url_params_status == "success"):
-                precheck_sqlinjection = helper.precheck_sqlinjection(payload)
-                precheck_sqlinjection_status = precheck_sqlinjection["status"]
-                precheck_sqlinjection_message = precheck_sqlinjection["message"]
+                check_sqlinjection = helper.check_sqlinjection(payload)
+                check_sqlinjection_status = check_sqlinjection["status"]
+                check_sqlinjection_message = check_sqlinjection["message"]
 
-                if(precheck_sqlinjection_status == "success"):
+                if(check_sqlinjection_status == "success"):
                     validate_equality_check = helper.validate_equality_check(
                         origin, destination)
                     check_equality_check_status = validate_equality_check["status"]
@@ -174,7 +174,7 @@ def rates_null():
                     else:
                         return Response(check_equality_check, status=400)
                 else:
-                    return Response(precheck_sqlinjection_message, status=400)
+                    return Response(check_sqlinjection_message, status=400)
             else:
                 return Response(f"""{check_url_params}""", status=400)
         else:
@@ -238,11 +238,11 @@ def price():
         check_url_params = validate_params["message"]
 
         if(check_url_params_status == "success"):
-            precheck_sqlinjection = helper.precheck_sqlinjection(payload)
-            precheck_sqlinjection_status = precheck_sqlinjection["status"]
-            precheck_sqlinjection_message = precheck_sqlinjection["message"]
+            check_sqlinjection = helper.check_sqlinjection(payload)
+            check_sqlinjection_status = check_sqlinjection["status"]
+            check_sqlinjection_message = check_sqlinjection["message"]
 
-            if(precheck_sqlinjection_status == "success"):
+            if(check_sqlinjection_status == "success"):
                 validate_equality_check = helper.validate_equality_check(
                     origin, destination)
                 check_equality_check_status = validate_equality_check["status"]
@@ -275,7 +275,7 @@ def price():
                 else:
                     return Response(check_equality_check, status=400)
             else:
-                return Response(precheck_sqlinjection_message, status=400)
+                return Response(check_sqlinjection_message, status=400)
         else:
             return Response(check_url_params, status=400)
     except BaseException as error:

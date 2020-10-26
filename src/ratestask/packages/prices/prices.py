@@ -4,11 +4,12 @@
 """
 from src.ratestask.helper.helper import helper
 from src.ratestask.api.service.service import service
+from src.ratestask.packages.prices.prices_proto import ProtoPrices
 from psycopg2 import DatabaseError, extras
 import json
 
 
-class Prices:
+class Prices(ProtoPrices):
     """ Prices Class.
 
         Class contains the core implementation details, functionalities and informations for prices.
