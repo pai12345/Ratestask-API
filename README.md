@@ -13,17 +13,13 @@ Application having details, functionality and information for Xeneta rates API t
 
 To install application:
 
-1. Clone the repo.
+1. Clone the repository.
 
-   `git clone repo`
+   `git clone https://github.com/pai12345/Ratestask-API.git`
 
 2. Install pipenv for creating virtual environments.
 
    `pip install pipenv`
-
-3. Install all dependencies.
-
-   `pipenv install requirements.txt`
 
 ### Execution
 

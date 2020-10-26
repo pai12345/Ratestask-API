@@ -74,7 +74,7 @@ def rates():
 
                     if(check_equality_status == "success"):
                         generate_query_recursion = helper.generate_query_recursion(
-                            destination)
+                            origin, destination)
                         query_recursion = generate_query_recursion["message"]
 
                         generate_query_rates = helper.generate_query_rates(
@@ -160,7 +160,7 @@ def rates_null():
 
                     if(check_equality_check_status == "success"):
                         generate_query_recursion = helper.generate_query_recursion(
-                            destination)
+                            origin, destination)
                         query_recursion = generate_query_recursion["message"]
 
                         generate_query_ratesnull = helper.generate_query_ratesnull(

@@ -169,7 +169,27 @@ class Helper(ProtoHelper):
         except(BaseException, DatabaseError) as error:
             return {"status": "error", "message": f"""Encountered Error while closing cursor object: {error}"""}
 
-    def generate_query_recursion(self, slug):
+    # def generate_query_recursion(self, slug):
+    #     """Query for recursion.
+
+    #        Function for generating query for recursion.
+
+    #        Parameters:
+    #         - slug: destination code,
+    #           type: string,
+    #           required: true,
+    #           description: contains destination code.
+
+    #        Returns:
+    #         status: status of the request-response cycle.
+    #         message: query for recursion.
+    #     """
+    #     try:
+    #         message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
+    #         return {"status": "success", "message": message}
+    #     except BaseException as error:
+    #         return {"status": "error", "message": "Encountered Error while generating recursion query"}
+    def generate_query_recursion(self, origin, destination):
         """Query for recursion.
 
            Function for generating query for recursion.
@@ -185,7 +205,35 @@ class Helper(ProtoHelper):
             message: query for recursion.
         """
         try:
-            message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
+            message = f"""
+WITH fullset as (
+select * from (
+SELECT * FROM (
+	WITH RECURSIVE ori AS (
+SELECT slug, '' dest_slug,  1::integer recursion_level
+FROM public.regions
+WHERE slug ='{origin}' 
+UNION ALL
+SELECT d.slug, '' dest_slug, ori.recursion_level +1
+FROM public.regions d
+JOIN ori ON ori.slug = d.parent_slug )
+SELECT * FROM ori
+) orig 
+union all
+SELECT * FROM (
+WITH RECURSIVE des AS (
+SELECT '' slug, slug dest_slug,  1::integer recursion_level
+FROM public.regions
+WHERE slug ='{destination}'
+UNION ALL
+SELECT '' slug, d.slug, des.recursion_level +1
+FROM public.regions d
+JOIN des ON des.dest_slug = d.parent_slug )
+SELECT * FROM des
+) dest 
+) allset
+	)
+"""
             return {"status": "success", "message": message}
         except BaseException as error:
             return {"status": "error", "message": "Encountered Error while generating recursion query"}
@@ -218,7 +266,7 @@ class Helper(ProtoHelper):
             message: query for rates.
         """
         try:
-            message = f"""SELECT json_agg(json_build_object('day', day, 'average_price', price)) as result FROM(SELECT day, AVG(price) price FROM public.prices WHERE DAY BETWEEN '{date_from}' AND '{date_to}' AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from a)) AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select slug from a)) GROUP BY DAY ORDER BY DAY ASC) as sub"""
+            message = f"""SELECT json_agg(json_build_object('day', day, 'average_price', price)) as result FROM(SELECT day, AVG(price) price FROM public.prices WHERE DAY BETWEEN '{date_from}' AND '{date_to}' AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from fullset)) AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select dest_slug from fullset)) GROUP BY DAY ORDER BY DAY ASC) as sub"""
             return{"status": "success", "message": message}
         except BaseException as error:
             return {"status": "error", "message": "Encountered Error while generating query for rates"}
@@ -260,8 +308,8 @@ end as average_price
 FROM public.prices
 WHERE
 DAY BETWEEN '{date_from}' AND '{date_to}'
-AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from a))
-AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select slug from a))
+AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from fullset))
+AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select dest_slug from fullset))
 GROUP BY DAY
 ORDER BY DAY ASC) as sub
 """
@@ -538,9 +586,10 @@ ORDER BY DAY ASC) as sub
             status = None
             message = None
             blacklist = ["DROP", "TRUNCATE", "ALTER",
-                         "DELETE", "INSERT", "UPDATE", "CREATE"]
+                         "DELETE", "INSERT", "UPDATE", "CREATE", "SELECT"]
             data = [payload[i] for i in payload]
-            validate = [True if i in blacklist else False for i in data]
+            validate = [
+                True if i.upper() in blacklist else False for i in data]
             check = True in validate
             if(check):
                 status = "error"

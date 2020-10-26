@@ -64,6 +64,7 @@ class Prices(ProtoPrices):
                         {query_recursion}
                         {query_rates}""")
                         result = cursor.fetchall()
+
                         helper.close_connection_cursor(cursor)
                         helper.release_connection_object(
                             connection_pool_message, connection_object_messsage)
