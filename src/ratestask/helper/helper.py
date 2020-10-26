@@ -342,7 +342,7 @@ ORDER BY DAY ASC) as sub
             message: query of upload price
         """
         try:
-            message = f"""insert into public.prices(orig_code, dest_code, day, price) values % s RETURNING price"""
+            message = f"""insert into public.prices(orig_code, dest_code, day, price) values %s RETURNING price"""
             return {"status": "success", "message": message}
         except BaseException as error:
             return {"status": "error", "message": "Encountered Error while generating query for uploading prices"}

@@ -238,6 +238,7 @@ def price():
         check_url_params = validate_params["message"]
 
         if(check_url_params_status == "success"):
+            payload.pop("price")
             check_sqlinjection = helper.check_sqlinjection(payload)
             check_sqlinjection_status = check_sqlinjection["status"]
             check_sqlinjection_message = check_sqlinjection["message"]
