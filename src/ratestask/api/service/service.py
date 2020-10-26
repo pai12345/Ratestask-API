@@ -34,7 +34,7 @@ class Service:
                              for i in response_to_json['rates']]
             return {"status": "success", "message": currency_rate[0]}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for openexchangerates API service :{error}"""}
 
 
 service = Service()

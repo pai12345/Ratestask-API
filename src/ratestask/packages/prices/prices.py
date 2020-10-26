@@ -72,7 +72,7 @@ class Prices:
                 message = "No records found for provided details"
             return {"status": status, "message": message}
         except (BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for checking average prices:{error}"""}
         finally:
             if (connection_pool_status == "success"):
                 helper.close_connection_pool(connection_pool_message)
@@ -110,7 +110,7 @@ class Prices:
              for i in date_range]
             return {"status": "success", "message": result}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for generating price payload:{error}"""}
 
     def upload_price(self, payload):
         """Upload price.
@@ -168,7 +168,7 @@ class Prices:
                 connection_pool_message, connection_object_message)
             return {"status": status, "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for uploading price:{error}"""}
         finally:
             if (connection_pool_status == "success"):
                 helper.close_connection_pool(connection_pool_message)
@@ -205,7 +205,7 @@ class Prices:
                     price, exchange_rate["message"])
             return {"status": "success", "message": price_usd["message"]}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for fetching price:{error}"""}
 
 
 prices = Prices()

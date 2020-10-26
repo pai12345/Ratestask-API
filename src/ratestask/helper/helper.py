@@ -2,11 +2,9 @@
 
     Module has implementation details, functionalities and informations for assisting APIs.
 """
-
-from os import error
 from psycopg2 import pool, DatabaseError
 import yaml
-from datetime import timedelta, date, datetime
+from datetime import timedelta, datetime
 from cerberus import Validator
 
 
@@ -43,7 +41,7 @@ class Helper:
                     result = None
                 return {"status": "success", "message": result}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while fetching URL:{error}"""}
 
     def create_connection_pool(self, url):
         """Create Connection Pool
@@ -65,7 +63,7 @@ class Helper:
                 1, 20, url)
             return {"status": "success", "message": create_pool}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while creating connection pool:{error}"""}
 
     def close_connection_pool(self, connection_pool):
         """Close Connection Pool
@@ -85,7 +83,7 @@ class Helper:
             close_pool = connection_pool.closeall()
             return {"status": "success", "message": close_pool}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while closing connection pool:{error}"""}
 
     def get_connection_object(self, connection_pool):
         """Get Connection
@@ -105,7 +103,7 @@ class Helper:
             get_connection = connection_pool.getconn()
             return {"status": "success", "message": get_connection}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while fetching connection object from pool:{error}"""}
 
     def release_connection_object(self, connection_pool, connection_object):
         """Release connection.
@@ -126,7 +124,7 @@ class Helper:
             release = connection_pool.putconn(connection_object)
             return {"status": "success", "message": release}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while releasing connection object to pool:{error}"""}
 
     def create_connection_cursor(self, connection_object):
         """Create cursor.
@@ -147,7 +145,7 @@ class Helper:
             cursor = connection_object.cursor()
             return {"status": "success", "message": cursor}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while creating cursor object:{error}"""}
 
     def close_connection_cursor(self, connection_cursor):
         """Close cursor.
@@ -168,7 +166,7 @@ class Helper:
             cursor_close = connection_cursor.close()
             return {"status": "success", "message": cursor_close}
         except(BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while closing cursor object:{error}"""}
 
     def generate_query_recursion(self, slug):
         """Query for recursion.
@@ -189,7 +187,7 @@ class Helper:
             message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while generating recursion query:{error}"""}
 
     def generate_query_rates(self, date_from, date_to, origin, destination):
         """Query for rates API.
@@ -222,12 +220,12 @@ class Helper:
             message = f"""SELECT json_agg(json_build_object('day', day, 'average_price', price)) as result FROM(SELECT day, AVG(price) price FROM public.prices WHERE DAY BETWEEN '{date_from}' AND '{date_to}' AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from a)) AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select slug from a)) GROUP BY DAY ORDER BY DAY ASC) as sub"""
             return{"status": "success", "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while generating query for rates:{error}"""}
 
     def generate_query_ratesnull(self, date_from, date_to, origin, destination):
         """Query for rates_null API.
 
-           Function for generating query for returning an empty value (JSON null) for days on which there are less than 3 prices in total.
+           Function for generating query for returning an empty value(JSON null) for days on which there are less than 3 prices in total.
 
            Parameters:
             - date_from: begin date,
@@ -268,7 +266,7 @@ ORDER BY DAY ASC) as sub
 """
             return {"status": "success", "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while generating query for rates_null:{error}"""}
 
     def generate_query_portcheck(self):
         """Query for port check.
@@ -280,10 +278,10 @@ ORDER BY DAY ASC) as sub
             message: query for port check.
         """
         try:
-            message = f"""SELECT json_agg(json_build_object('code',code)) as result from public.ports where code in %s"""
+            message = f"""SELECT json_agg(json_build_object('code', code)) as result from public.ports where code in %s"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while generating query for portcheck:{error}"""}
 
     def generate_query_uploadprice(self):
         """Query for upload price.
@@ -295,10 +293,10 @@ ORDER BY DAY ASC) as sub
             message: query of upload price
         """
         try:
-            message = f"""insert into public.prices (orig_code, dest_code, day, price) values %s RETURNING price"""
+            message = f"""insert into public.prices(orig_code, dest_code, day, price) values % s RETURNING price"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while generating query for uploading prices:{error}"""}
 
     def get_date_range(self, start_date, end_date):
         """Get date range.
@@ -329,7 +327,7 @@ ORDER BY DAY ASC) as sub
                 start += step
             return {"status": "success", "message": Dats}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while fetching date range:{error}"""}
 
     def connvert_to_USD(self, price, exchange_rate):
         """Convert currency to USD.
@@ -355,7 +353,7 @@ ORDER BY DAY ASC) as sub
             price_roundoff = round(price_USD)
             return {"status": "success", "message": price_roundoff}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while computing price to USD:{error}"""}
 
     def validate_params(self, payload, category):
         """Validates url params and payload.
@@ -412,7 +410,7 @@ ORDER BY DAY ASC) as sub
                 message = check_data.errors
             return {"status": status, "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while validating parameters:{error}"""}
 
     def validate_equality_check(self, origin, destination):
         """Equality Check.
@@ -444,7 +442,7 @@ ORDER BY DAY ASC) as sub
                 message = "valid"
             return {"status": status, "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while validating equality check:{error}"""}
 
     def validate_ports_types(self, origin, result):
         """Validate ports.
@@ -484,7 +482,7 @@ ORDER BY DAY ASC) as sub
                 message = "No origin and destination codes present"
             return {"status": status, "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while validating port types:{error}"""}
 
     def precheck_parameters(self, payload):
         try:
@@ -494,13 +492,6 @@ ORDER BY DAY ASC) as sub
                 accept = ["date_from", "date_to", "origin", "destination"]
                 check = [i for i in payload]
                 if(accept == check):
-                    # if(payload["date_from"] > payload["date_to"]):
-                    #     status = "error"
-                    #     message = "date_from cannot be greater than date_to."
-                    # elif(payload["date_from"] == payload["date_to"]):
-                    #     status = "error"
-                    #     message = "date_from cannot be equal to date_to."
-                    # else:
                     status = "success"
                     message = "valid"
                 else:
@@ -511,7 +502,26 @@ ORDER BY DAY ASC) as sub
                 message = "Invalid URL parameters"
             return {"status": status, "message": message}
         except BaseException as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error while prechecking parameters:{error}"""}
+
+    def precheck_sqlinjection(self, payload):
+        try:
+            status = None
+            message = None
+            blacklist = ["DROP", "TRUNCATE", "ALTER",
+                         "DELETE", "INSERT", "UPDATE", "CREATE"]
+            data = [payload[i] for i in payload]
+            validate = [True if i in blacklist else False for i in data]
+            check = True in validate
+            if(check):
+                status = "success"
+                message = "valid"
+            else:
+                status = "error"
+                message = "Invalid parameters present"
+            return {"status": status, "message": message}
+        except BaseException as error:
+            return {"status": "error", "message": f"""Encountered Error while validating for SQL injection:{error}"""}
 
 
 helper = Helper()

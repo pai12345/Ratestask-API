@@ -19,7 +19,7 @@ def welcome():
     try:
         return Response("<h1>Welcome to Xeneta - ratestask<h1>", status=200)
     except (BaseException) as error:
-        raise error
+        return {"status": "error", "message": f"""Encountered Error for Welcome Page :{error}"""}
 
 
 app.run()

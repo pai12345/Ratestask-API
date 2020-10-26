@@ -43,6 +43,7 @@ def rates():
             request.args.to_dict())
         precheck_status = precheck_parameters["status"]
         precheck_message = precheck_parameters["message"]
+
         if(precheck_status == "success"):
             date_from = request.args.get('date_from', type=str)
             date_to = request.args.get('date_to', type=str)
@@ -61,31 +62,39 @@ def rates():
             check_url_params = validate_params["message"]
 
             if(check_url_params_status == "success"):
-                validate_equality_check = helper.validate_equality_check(
-                    origin, destination)
-                check_equality_status = validate_equality_check["status"]
-                check_equality_check = validate_equality_check["message"]
+                precheck_sqlinjection = helper.precheck_sqlinjection(payload)
+                precheck_sqlinjection_status = precheck_sqlinjection["status"]
+                precheck_sqlinjection_message = precheck_sqlinjection["message"]
 
-                if(check_equality_status == "success"):
-                    generate_query_recursion = helper.generate_query_recursion(
-                        destination)
-                    query_recursion = generate_query_recursion["message"]
+                if(precheck_sqlinjection_status == "success"):
+                    validate_equality_check = helper.validate_equality_check(
+                        origin, destination)
+                    check_equality_status = validate_equality_check["status"]
+                    check_equality_check = validate_equality_check["message"]
 
-                    generate_query_rates = helper.generate_query_rates(
-                        date_from, date_to, origin, destination)
-                    query_rates_null = generate_query_rates["message"]
+                    if(check_equality_status == "success"):
+                        generate_query_recursion = helper.generate_query_recursion(
+                            destination)
+                        query_recursion = generate_query_recursion["message"]
 
-                    average_rates = prices.average_rates(
-                        query_recursion, query_rates_null)
-                    return Response(average_rates["message"], status=200)
+                        generate_query_rates = helper.generate_query_rates(
+                            date_from, date_to, origin, destination)
+                        query_rates_null = generate_query_rates["message"]
+
+                        average_rates = prices.average_rates(
+                            query_recursion, query_rates_null)
+
+                        return Response(average_rates["message"], status=200)
+                    else:
+                        return Response(check_equality_check, status=400)
                 else:
-                    return Response(check_equality_check, status=400)
+                    return Response(f"""{precheck_sqlinjection_message}""", status=400)
             else:
                 return Response(f"""{check_url_params}""", status=400)
         else:
             return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
-        raise error
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates :{error}"""}
 
 
 @router.route('/rates_null', methods=['GET'])
@@ -139,32 +148,39 @@ def rates_null():
             check_url_params = check_url["message"]
 
             if(check_url_params_status == "success"):
-                validate_equality_check = helper.validate_equality_check(
-                    origin, destination)
-                check_equality_check_status = validate_equality_check["status"]
-                check_equality_check = validate_equality_check["message"]
+                precheck_sqlinjection = helper.precheck_sqlinjection(payload)
+                precheck_sqlinjection_status = precheck_sqlinjection["status"]
+                precheck_sqlinjection_message = precheck_sqlinjection["message"]
 
-                if(check_equality_check_status == "success"):
-                    generate_query_recursion = helper.generate_query_recursion(
-                        destination)
-                    query_recursion = generate_query_recursion["message"]
+                if(precheck_sqlinjection_status == "success"):
+                    validate_equality_check = helper.validate_equality_check(
+                        origin, destination)
+                    check_equality_check_status = validate_equality_check["status"]
+                    check_equality_check = validate_equality_check["message"]
 
-                    generate_query_ratesnull = helper.generate_query_ratesnull(
-                        date_from, date_to, origin, destination)
-                    query_rates_null = generate_query_ratesnull["message"]
+                    if(check_equality_check_status == "success"):
+                        generate_query_recursion = helper.generate_query_recursion(
+                            destination)
+                        query_recursion = generate_query_recursion["message"]
 
-                    average_rates = prices.average_rates(
-                        query_recursion, query_rates_null)
+                        generate_query_ratesnull = helper.generate_query_ratesnull(
+                            date_from, date_to, origin, destination)
+                        query_rates_null = generate_query_ratesnull["message"]
 
-                    return Response(average_rates["message"], status=200)
+                        average_rates = prices.average_rates(
+                            query_recursion, query_rates_null)
+
+                        return Response(average_rates["message"], status=200)
+                    else:
+                        return Response(check_equality_check, status=400)
                 else:
-                    return Response(check_equality_check, status=400)
+                    return Response(precheck_sqlinjection_message, status=400)
             else:
                 return Response(f"""{check_url_params}""", status=400)
         else:
             return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
-        raise error
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates_null :{error}"""}
 
 
 @router.route('/price', methods=['POST'])
@@ -222,37 +238,45 @@ def price():
         check_url_params = validate_params["message"]
 
         if(check_url_params_status == "success"):
-            validate_equality_check = helper.validate_equality_check(
-                origin, destination)
-            check_equality_check_status = validate_equality_check["status"]
-            check_equality_check = validate_equality_check["message"]
+            precheck_sqlinjection = helper.precheck_sqlinjection(payload)
+            precheck_sqlinjection_status = precheck_sqlinjection["status"]
+            precheck_sqlinjection_message = precheck_sqlinjection["message"]
 
-            if(check_equality_check_status == "success"):
-                check_ports_code = ports.check_ports(
+            if(precheck_sqlinjection_status == "success"):
+                validate_equality_check = helper.validate_equality_check(
                     origin, destination)
-                check_ports_status = check_ports_code["status"]
-                check_ports = check_ports_code["message"]
+                check_equality_check_status = validate_equality_check["status"]
+                check_equality_check = validate_equality_check["message"]
 
-                if(check_ports_status == "success"):
-                    get_price = prices.get_price(price, currency)
-                    price_usd = get_price["message"]
+                if(check_equality_check_status == "success"):
+                    check_ports_code = ports.check_ports(
+                        origin, destination)
+                    check_ports_status = check_ports_code["status"]
+                    check_ports = check_ports_code["message"]
 
-                    get_range = helper.get_date_range(
-                        date_from, date_to)
-                    get_date_range = get_range["message"]
+                    if(check_ports_status == "success"):
+                        get_price = prices.get_price(price, currency)
+                        price_usd = get_price["message"]
 
-                    generate_price_payload = prices.generate_price_payload(
-                        get_date_range, origin, destination, price_usd)
-                    get_pricing_payload = generate_price_payload["message"]
+                        get_range = helper.get_date_range(
+                            date_from, date_to)
+                        get_date_range = get_range["message"]
 
-                    upload_price_database = prices.upload_price(
-                        get_pricing_payload)
-                    return Response(upload_price_database["message"], status=201)
+                        generate_price_payload = prices.generate_price_payload(
+                            get_date_range, origin, destination, price_usd)
+                        get_pricing_payload = generate_price_payload["message"]
+
+                        upload_price_database = prices.upload_price(
+                            get_pricing_payload)
+
+                        return Response(upload_price_database["message"], status=201)
+                    else:
+                        return Response(check_ports, status=400)
                 else:
-                    return Response(check_ports, status=400)
+                    return Response(check_equality_check, status=400)
             else:
-                return Response(check_equality_check, status=400)
+                return Response(precheck_sqlinjection_message, status=400)
         else:
             return Response(check_url_params, status=400)
     except BaseException as error:
-        raise error
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /prices :{error}"""}

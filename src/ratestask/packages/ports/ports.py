@@ -68,7 +68,7 @@ class Ports:
                 connection_pool, connection_object)
             return {"status": "success", "message": validate_result}
         except (BaseException, DatabaseError) as error:
-            raise error
+            return {"status": "error", "message": f"""Encountered Error for checking ports for origin and destination:{error}"""}
         finally:
             if (connection_pool_status == "success"):
                 helper.close_connection_pool(connection_pool)
