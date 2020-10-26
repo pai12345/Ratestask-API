@@ -17,9 +17,9 @@ def welcome():
         Page with a welcome greeting.
     """
     try:
-        return Response("<h1>Welcome to Xeneta - ratestask<h1>", status=200)
+        return Response("<h1>Welcome to Xeneta's Rate task API<h1>", status=200)
     except (BaseException) as error:
-        return {"status": "error", "message": f"""Encountered Error for Welcome Page :{error}"""}
+        return {"status": "error", "message": f"""Encountered Error for Welcome Page: {error}"""}
 
 
 app.run()

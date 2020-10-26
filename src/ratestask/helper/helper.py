@@ -42,7 +42,7 @@ class Helper(ProtoHelper):
                     result = None
                 return {"status": "success", "message": result}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while fetching URL:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while fetching URL: {error}"""}
 
     def create_connection_pool(self, url):
         """Create Connection Pool
@@ -64,7 +64,7 @@ class Helper(ProtoHelper):
                 1, 20, url)
             return {"status": "success", "message": create_pool}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while creating connection pool:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while creating connection pool: {error}"""}
 
     def close_connection_pool(self, connection_pool):
         """Close Connection Pool
@@ -84,7 +84,7 @@ class Helper(ProtoHelper):
             close_pool = connection_pool.closeall()
             return {"status": "success", "message": close_pool}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while closing connection pool:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while closing connection pool: {error}"""}
 
     def get_connection_object(self, connection_pool):
         """Get Connection
@@ -104,7 +104,7 @@ class Helper(ProtoHelper):
             get_connection = connection_pool.getconn()
             return {"status": "success", "message": get_connection}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while fetching connection object from pool:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while fetching connection object from pool: {error}"""}
 
     def release_connection_object(self, connection_pool, connection_object):
         """Release connection.
@@ -125,7 +125,7 @@ class Helper(ProtoHelper):
             release = connection_pool.putconn(connection_object)
             return {"status": "success", "message": release}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while releasing connection object to pool:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while releasing connection object to pool: {error}"""}
 
     def create_connection_cursor(self, connection_object):
         """Create cursor.
@@ -146,7 +146,7 @@ class Helper(ProtoHelper):
             cursor = connection_object.cursor()
             return {"status": "success", "message": cursor}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while creating cursor object:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while creating cursor object: {error}"""}
 
     def close_connection_cursor(self, connection_cursor):
         """Close cursor.
@@ -167,7 +167,7 @@ class Helper(ProtoHelper):
             cursor_close = connection_cursor.close()
             return {"status": "success", "message": cursor_close}
         except(BaseException, DatabaseError) as error:
-            return {"status": "error", "message": f"""Encountered Error while closing cursor object:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while closing cursor object: {error}"""}
 
     def generate_query_recursion(self, slug):
         """Query for recursion.
@@ -188,7 +188,7 @@ class Helper(ProtoHelper):
             message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while generating recursion query:{error}"""}
+            return {"status": "error", "message": "Encountered Error while generating recursion query"}
 
     def generate_query_rates(self, date_from, date_to, origin, destination):
         """Query for rates API.
@@ -221,7 +221,7 @@ class Helper(ProtoHelper):
             message = f"""SELECT json_agg(json_build_object('day', day, 'average_price', price)) as result FROM(SELECT day, AVG(price) price FROM public.prices WHERE DAY BETWEEN '{date_from}' AND '{date_to}' AND orig_code in (select code from public.ports where code='{origin}' or parent_slug in (select slug from a)) AND dest_code in (select code from public.ports where code='{destination}' or parent_slug in (select slug from a)) GROUP BY DAY ORDER BY DAY ASC) as sub"""
             return{"status": "success", "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while generating query for rates:{error}"""}
+            return {"status": "error", "message": "Encountered Error while generating query for rates"}
 
     def generate_query_ratesnull(self, date_from, date_to, origin, destination):
         """Query for rates_null API.
@@ -267,7 +267,7 @@ ORDER BY DAY ASC) as sub
 """
             return {"status": "success", "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while generating query for rates_null:{error}"""}
+            return {"status": "error", "message": "Encountered Error while generating query for rates_null"}
 
     def generate_query_portcheck(self):
         """Query for port check.
@@ -282,7 +282,7 @@ ORDER BY DAY ASC) as sub
             message = f"""SELECT json_agg(json_build_object('code', code)) as result from public.ports where code in %s"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while generating query for portcheck:{error}"""}
+            return {"status": "error", "message": "Encountered Error while generating query for portcheck"}
 
     def generate_query_uploadprice(self):
         """Query for upload price.
@@ -297,7 +297,7 @@ ORDER BY DAY ASC) as sub
             message = f"""insert into public.prices(orig_code, dest_code, day, price) values % s RETURNING price"""
             return {"status": "success", "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while generating query for uploading prices:{error}"""}
+            return {"status": "error", "message": "Encountered Error while generating query for uploading prices"}
 
     def get_date_range(self, start_date, end_date):
         """Get date range.
@@ -328,7 +328,7 @@ ORDER BY DAY ASC) as sub
                 start += step
             return {"status": "success", "message": Dats}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while fetching date range:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while fetching date range: {error}"""}
 
     def connvert_to_USD(self, price, exchange_rate):
         """Convert currency to USD.
@@ -354,7 +354,7 @@ ORDER BY DAY ASC) as sub
             price_roundoff = round(price_USD)
             return {"status": "success", "message": price_roundoff}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while computing price to USD:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while computing price to USD: {error}"""}
 
     def validate_params(self, payload, category):
         """Validates url params and payload.
@@ -408,10 +408,10 @@ ORDER BY DAY ASC) as sub
                     message = "valid"
             else:
                 status = "error"
-                message = check_data.errors
+                message = f"""Invalid URL Paramerters: {check_data.errors}."""
             return {"status": status, "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while validating parameters:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while validating parameters: {error}"""}
 
     def validate_equality_check(self, origin, destination):
         """Equality Check.
@@ -443,7 +443,7 @@ ORDER BY DAY ASC) as sub
                 message = "valid"
             return {"status": status, "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while validating equality check:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while validating equality check: {error}"""}
 
     def validate_ports_types(self, origin, result):
         """Validate ports.
@@ -483,7 +483,7 @@ ORDER BY DAY ASC) as sub
                 message = "No origin and destination codes present"
             return {"status": status, "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while validating port types:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while validating port types: {error}"""}
 
     def precheck_parameters(self, payload):
         """Precheck all parameters.
@@ -517,7 +517,7 @@ ORDER BY DAY ASC) as sub
                 message = "Invalid URL parameters"
             return {"status": status, "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while prechecking parameters:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while prechecking parameters: {error}"""}
 
     def check_sqlinjection(self, payload):
         """check for SQL injections.
@@ -550,7 +550,7 @@ ORDER BY DAY ASC) as sub
                 message = "valid"
             return {"status": status, "message": message}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error while validating for SQL injection:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error while validating for SQL injection: {error}"""}
 
 
 helper = Helper()

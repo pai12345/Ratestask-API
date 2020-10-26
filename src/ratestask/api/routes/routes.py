@@ -180,7 +180,7 @@ def rates_null():
         else:
             return Response(f"""{precheck_message}""", status=400)
     except BaseException as error:
-        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates_null :{error}"""}
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /rates_null: {error}"""}
 
 
 @router.route('/price', methods=['POST'])
@@ -279,4 +279,4 @@ def price():
         else:
             return Response(check_url_params, status=400)
     except BaseException as error:
-        return {"status": "error", "message": f"""Encountered Error for API endpoint /prices :{error}"""}
+        return {"status": "error", "message": f"""Encountered Error for API endpoint /prices: {error}"""}

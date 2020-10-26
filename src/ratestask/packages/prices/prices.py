@@ -47,30 +47,41 @@ class Prices(ProtoPrices):
             connection_pool_status = create_connection_pool["status"]
             connection_pool_message = create_connection_pool["message"]
 
-            get_connection_object = helper.get_connection_object(
-                connection_pool_message)
-            connection_object_status = get_connection_object["status"]
-            connection_object_messsage = get_connection_object["message"]
+            if(connection_pool_status == "success"):
+                get_connection_object = helper.get_connection_object(
+                    connection_pool_message)
+                connection_object_status = get_connection_object["status"]
+                connection_object_messsage = get_connection_object["message"]
 
-            if(connection_object_status == "success"):
-                create_connection_cursor = helper.create_connection_cursor(
-                    connection_object_messsage)
-                cursor = create_connection_cursor["message"]
+                if(connection_object_status == "success"):
+                    create_connection_cursor = helper.create_connection_cursor(
+                        connection_object_messsage)
+                    cursor_status = create_connection_cursor["status"]
+                    cursor = create_connection_cursor["message"]
 
-                cursor.execute(
-                    f"""
-                   {query_recursion}
-                   {query_rates}""")
-                result = cursor.fetchall()
-                helper.close_connection_cursor(cursor)
-            helper.release_connection_object(
-                connection_pool_message, connection_object_messsage)
-            if(result[0][0] != None):
-                status = "success"
-                message = json.dumps(result[0][0])
+                    if(cursor_status == "success"):
+                        cursor.execute(f"""
+                        {query_recursion}
+                        {query_rates}""")
+                        result = cursor.fetchall()
+                        helper.close_connection_cursor(cursor)
+                        helper.release_connection_object(
+                            connection_pool_message, connection_object_messsage)
+                        if(result[0][0] != None):
+                            status = "success"
+                            message = json.dumps(result[0][0])
+                        else:
+                            status = "success"
+                            message = "No records found for provided details"
+                    else:
+                        status = "error"
+                        message = cursor
+                else:
+                    status = "error"
+                    message = connection_object_messsage
             else:
-                status = "success"
-                message = "No records found for provided details"
+                status = "error"
+                message = connection_pool_message
             return {"status": status, "message": message}
         except (BaseException, DatabaseError) as error:
             return {"status": "error", "message": f"""Encountered Error for checking average prices:{error}"""}
@@ -119,7 +130,7 @@ class Prices(ProtoPrices):
            Function to upload price.
 
           Parameters:
-           - payload: payload data, 
+           - payload: payload data,
              type: list,
              required: true,
              description: list structured with required fields and data for uploading.
@@ -140,33 +151,46 @@ class Prices(ProtoPrices):
             connection_pool_status = create_connection_pool["status"]
             connection_pool_message = create_connection_pool["message"]
 
-            get_connection_object = helper.get_connection_object(
-                connection_pool_message)
-            connection_object_status = get_connection_object["status"]
-            connection_object_message = get_connection_object["message"]
+            if(connection_pool_status == "success"):
+                get_connection_object = helper.get_connection_object(
+                    connection_pool_message)
+                connection_object_status = get_connection_object["status"]
+                connection_object_message = get_connection_object["message"]
 
-            generate_query_uploadprice = helper.generate_query_uploadprice()
-            query_upload_price = generate_query_uploadprice["message"]
+                if(connection_object_status == "success"):
+                    create_connection_cursor = helper.create_connection_cursor(
+                        connection_object_message)
+                    cursor_status = create_connection_cursor["status"]
+                    cursor = create_connection_cursor["message"]
 
-            if(connection_object_status == "success"):
-                create_connection_cursor = helper.create_connection_cursor(
-                    connection_object_message)
-                cursor = create_connection_cursor["message"]
+                    if(cursor_status == "success"):
+                        generate_query_uploadprice = helper.generate_query_uploadprice()
+                        query_upload_price = generate_query_uploadprice["message"]
 
-                extras.execute_values(
-                    cursor, query_upload_price, payload)
-                result = cursor.fetchall()
-                if(len(result) == len(payload)):
-                    connection_object_message.commit()
-                    status = "success"
-                    message = "Data uploaded successfully"
+                        extras.execute_values(
+                            cursor, query_upload_price, payload)
+                        result = cursor.fetchall()
+
+                        if(len(result) == len(payload)):
+                            connection_object_message.commit()
+                            status = "success"
+                            message = "Data uploaded successfully"
+                        else:
+                            connection_object_message.rollback()
+                            status = "error"
+                            message = "Not all rows were inserted, rollbacked updates"
+                            helper.close_connection_cursor(cursor)
+                            helper.release_connection_object(
+                                connection_pool_message, connection_object_message)
+                    else:
+                        status = "error"
+                        message = cursor
                 else:
-                    connection_object_message.rollback()
                     status = "error"
-                    message = "Not all rows were inserted, rollbacked updates"
-                helper.close_connection_cursor(cursor)
-            helper.release_connection_object(
-                connection_pool_message, connection_object_message)
+                    message = connection_object_message
+            else:
+                status = "error"
+                message = connection_pool_message
             return {"status": status, "message": message}
         except BaseException as error:
             return {"status": "error", "message": f"""Encountered Error for uploading price:{error}"""}
@@ -180,12 +204,12 @@ class Prices(ProtoPrices):
            Function to fetch price in USD.
 
           Parameters:
-           - price: price type, 
+           - price: price type,
              type: integer,
              required: true,
              description: Indicates price.
            - currency: currency type,
-             default: USD, 
+             default: USD,
              type: string,
              required: true,
              description: Indicates different currency type.
@@ -206,7 +230,7 @@ class Prices(ProtoPrices):
                     price, exchange_rate["message"])
             return {"status": "success", "message": price_usd["message"]}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error for fetching price:{error}"""}
+            return {"status": "error", "message": f"""Encountered Error for fetching price: {error}"""}
 
 
 prices = Prices()
