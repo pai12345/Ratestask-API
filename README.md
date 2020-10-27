@@ -109,5 +109,5 @@ Navigate to Task2 folder for the Design and Approach doc on receiving and updati
   - Challenges: Query optimization.
 
 - Task2:
-  - Total Time spent: 3 hrs
+  - Total Time spent: 3 hrs.
   - Challenges: Choosing the most efficient approach.
