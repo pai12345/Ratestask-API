@@ -226,8 +226,12 @@ class Prices(ProtoPrices):
 
             if(currency == 'USD'):
                 price_usd = price
+                status = "success"
+                message = price_usd
             elif(currency == None):
                 price_usd = price
+                status = "success"
+                message = price_usd
             else:
                 exchange_rate = service.openexchangerates_service(currency)
                 exchange_rate_status = exchange_rate["status"]

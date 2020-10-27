@@ -240,8 +240,10 @@ def price():
             "origin": origin,
             "destination": destination,
             "price": price,
-            "currency": currency
         }
+
+        if(currency != None):
+            payload["currency"] = currency
 
         validate_params = helper.validate_params(payload, "price")
         check_url_params_status = validate_params["status"]
@@ -254,7 +256,9 @@ def price():
             date_to = date_to.strip()
             origin = origin.strip()
             destination = destination.strip()
-            currency = currency.strip()
+
+            if(currency != None):
+                currency = currency.strip()
 
             check_sqlinjection = helper.check_sqlinjection(payload)
             check_sqlinjection_status = check_sqlinjection["status"]

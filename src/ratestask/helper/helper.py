@@ -3,10 +3,10 @@
     Module has implementation details, functionalities and informations for assisting classes and methods.
 """
 from psycopg2 import pool, DatabaseError
-import yaml
 from datetime import timedelta, datetime
 from cerberus import Validator
 from src.ratestask.helper.helper_proto import ProtoHelper
+import yaml
 
 
 class Helper(ProtoHelper):
@@ -417,7 +417,7 @@ ORDER BY DAY ASC) as sub
                           'origin': {'required': True, 'type': 'string'},
                           'destination': {'required': True, 'type': 'string'},
                           'price': {'required': True, 'type': 'integer', 'min': 0},
-                          'currency': {'type': 'string'}}
+                          'currency': {'required': False, 'type': 'string'}}
             elif(category == "rates"):
                 schema = {'date_from': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
                           'date_to': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},

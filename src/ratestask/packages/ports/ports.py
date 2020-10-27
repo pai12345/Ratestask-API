@@ -3,8 +3,8 @@
     Module has implementation details, business functionalities and informations for ports.
 """
 from src.ratestask.helper.helper import helper
-from psycopg2 import DatabaseError
 from src.ratestask.packages.ports.ports_proto import ProtoPorts
+from psycopg2 import DatabaseError
 
 
 class Ports(ProtoPorts):

@@ -3,9 +3,9 @@
     Contains implementation details, functionalities and informations of HTTP library and services.
 """
 from requests import get
-import json
 from src.ratestask.helper.helper import helper
 from src.ratestask.api.service.service_proto import ProtoService
+import json
 
 
 class Service(ProtoService):

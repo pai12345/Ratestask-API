@@ -1,6 +1,11 @@
-# Xeneta - rates API task
+# Xeneta - rates task
 
-Application having details, functionality and information for Xeneta rates API task.
+Application having details, functionality and information for Xeneta rates task.
+
+- Task 1: Includes HTTP based API.
+- Task 2: Includes solution for Batch Processing.
+
+# Task 1 - API
 
 ## Getting Started
 
@@ -11,9 +16,68 @@ Application having details, functionality and information for Xeneta rates API t
 
 ### Assumptions
 
-- port codes is case sensitive as there is regions.
-- price cannot be null but can be 0.
-- extra space wont be trimmed.
+- Both orign and destination codes are case sensitive as both origin, destination params accept either port codes or region slugs.
+- Price cannot be null but can be 0.
+- Date format is YYYY-MM-DD.
+
+### GET Request Task
+
+#### Part 1
+
+API returns a list with the average prices for each day on a route between port codes origin and destination.
+
+API takes following URL parameters:
+
+- date_from
+- date_to
+- origin
+- destination
+
+Sample: `http://localhost:5000/rates?date_from=2016-01-01&date_to=2016-01-10&origin=CNSGH&destination=NOSVG`
+
+#### Part 2
+
+API return an empty value (JSON null) for days on which there are less than 3 prices in total.
+
+API takes following URL parameters:
+
+- date_from
+- date_to
+- origin
+- destination
+
+Sample: `http://localhost:5000/rates_null?date_from=2016-01-01&date_to=2016-01-10&origin=CNSGH&destination=NOSVG`
+
+### POST Request Task
+
+#### Part 1
+
+API endpoint for uploading price.
+
+API takes following payload attributes:
+
+- date_from
+- date_to
+- origin
+- destination
+- price
+
+Sample: `{ "date_from":"2016-11-01", "date_to":"2016-12-10", "origin":"CNSGH", "destination":"NOKRS", "price":100 }`
+
+#### Part 2
+
+API endpoint extended to accept prices in different currencies. Exchange rates computed as per https://openexchangerates.org/
+
+API takes following payload attributes:
+
+- date_from
+- date_to
+- origin
+- destination
+- price
+- currency
+
+Sample: `{ "date_from":"2016-11-01", "date_to":"2016-12-10", "origin":"CNSGH", "destination":"NOKRS", "price":100, "currency": "EUR" }`
 
 ### Installation
 
@@ -29,6 +93,21 @@ To install application:
 
 ### Execution
 
-For running the application.
+For executing the application.
 
 `pipenv run python index.py`
+
+# Task 2 - Batch Processing
+
+Contains pdf file having details and solution for receiving and updating batches of tens of thousands of new prices.
+
+# Effort
+
+- Task 1:
+
+  - Total Time spent: 7 hrs
+  - Challenges: Query optimization.
+
+- Task2:
+  - Total Time spent: 3 hrs
+  - Challenges: Choosing the most efficient approach.
