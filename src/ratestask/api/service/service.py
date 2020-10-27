@@ -35,7 +35,7 @@ class Service(ProtoService):
                              for i in response_to_json['rates']]
             return {"status": "success", "message": currency_rate[0]}
         except BaseException as error:
-            return {"status": "error", "message": f"""Encountered Error for openexchangerates API service :{error}"""}
+            return {"status": "error", "message": f"""Encountered Error for openexchangerates API service: Conversion for '{currency}' failed"""}
 
 
 service = Service()

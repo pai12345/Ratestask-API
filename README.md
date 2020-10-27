@@ -9,6 +9,12 @@ Application having details, functionality and information for Xeneta rates API t
 - Python version above 3.0
 - Python pip
 
+### Assumptions
+
+- port codes is case sensitive as there is regions.
+- price cannot be null but can be 0.
+- extra space wont be trimmed.
+
 ### Installation
 
 To install application:
@@ -23,8 +29,6 @@ To install application:
 
 ### Execution
 
-#### Local Environment
-
-For running the application in Local Environment.
+For running the application.
 
 `pipenv run python index.py`

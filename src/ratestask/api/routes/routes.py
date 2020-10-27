@@ -62,6 +62,11 @@ def rates():
             check_url_params = validate_params["message"]
 
             if(check_url_params_status == "success"):
+                date_from = date_from.strip()
+                date_to = date_to.strip()
+                origin = origin.strip()
+                destination = destination.strip()
+
                 check_sqlinjection = helper.check_sqlinjection(payload)
                 check_sqlinjection_status = check_sqlinjection["status"]
                 check_sqlinjection_message = check_sqlinjection["message"]
@@ -148,6 +153,11 @@ def rates_null():
             check_url_params = check_url["message"]
 
             if(check_url_params_status == "success"):
+                date_from = date_from.strip()
+                date_to = date_to.strip()
+                origin = origin.strip()
+                destination = destination.strip()
+
                 check_sqlinjection = helper.check_sqlinjection(payload)
                 check_sqlinjection_status = check_sqlinjection["status"]
                 check_sqlinjection_message = check_sqlinjection["message"]
@@ -239,6 +249,13 @@ def price():
 
         if(check_url_params_status == "success"):
             payload.pop("price")
+
+            date_from = date_from.strip()
+            date_to = date_to.strip()
+            origin = origin.strip()
+            destination = destination.strip()
+            currency = currency.strip()
+
             check_sqlinjection = helper.check_sqlinjection(payload)
             check_sqlinjection_status = check_sqlinjection["status"]
             check_sqlinjection_message = check_sqlinjection["message"]
@@ -257,20 +274,29 @@ def price():
 
                     if(check_ports_status == "success"):
                         get_price = prices.get_price(price, currency)
+                        price_usd_status = get_price["status"]
                         price_usd = get_price["message"]
 
-                        get_range = helper.get_date_range(
-                            date_from, date_to)
-                        get_date_range = get_range["message"]
+                        if(price_usd_status == "success"):
+                            get_range = helper.get_date_range(
+                                date_from, date_to)
+                            get_date_range = get_range["message"]
 
-                        generate_price_payload = prices.generate_price_payload(
-                            get_date_range, origin, destination, price_usd)
-                        get_pricing_payload = generate_price_payload["message"]
+                            generate_price_payload = prices.generate_price_payload(
+                                get_date_range, origin, destination, price_usd)
+                            get_pricing_payload = generate_price_payload["message"]
 
-                        upload_price_database = prices.upload_price(
-                            get_pricing_payload)
+                            upload_price_database = prices.upload_price(
+                                get_pricing_payload)
+                            upload_price_database_status = upload_price_database["status"]
+                            upload_price_database_message = upload_price_database["message"]
 
-                        return Response(upload_price_database["message"], status=201)
+                            if(upload_price_database_status == "success"):
+                                return Response(upload_price_database_message, status=201)
+                            else:
+                                return Response(upload_price_database_message, status=400)
+                        else:
+                            return Response(price_usd, status=400)
                     else:
                         return Response(check_ports, status=400)
                 else:

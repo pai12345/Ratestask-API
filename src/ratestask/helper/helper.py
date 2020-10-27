@@ -169,40 +169,24 @@ class Helper(ProtoHelper):
         except(BaseException, DatabaseError) as error:
             return {"status": "error", "message": f"""Encountered Error while closing cursor object: {error}"""}
 
-    # def generate_query_recursion(self, slug):
-    #     """Query for recursion.
-
-    #        Function for generating query for recursion.
-
-    #        Parameters:
-    #         - slug: destination code,
-    #           type: string,
-    #           required: true,
-    #           description: contains destination code.
-
-    #        Returns:
-    #         status: status of the request-response cycle.
-    #         message: query for recursion.
-    #     """
-    #     try:
-    #         message = f"""WITH RECURSIVE a AS (SELECT slug, parent_slug, 1:: integer recursion_level FROM public.regions WHERE slug ='{slug}' UNION ALL SELECT d.slug, d.parent_slug, a.recursion_level + 1 FROM public.regions d JOIN a ON a.slug = d.parent_slug)"""
-    #         return {"status": "success", "message": message}
-    #     except BaseException as error:
-    #         return {"status": "error", "message": "Encountered Error while generating recursion query"}
     def generate_query_recursion(self, origin, destination):
         """Query for recursion.
 
            Function for generating query for recursion.
 
            Parameters:
-            - slug: destination code,
+            - origin: origin code,
+              type: string,
+              required: true,
+              description: contains origin code.
+            - destination: destination code,
               type: string,
               required: true,
               description: contains destination code.
 
            Returns:
             status: status of the request-response cycle.
-            message: query for recursion.
+            message: query for fetching hierarchical data.
         """
         try:
             message = f"""
@@ -398,7 +382,7 @@ ORDER BY DAY ASC) as sub
             message: rounded-off price in USD.
         """
         try:
-            price_USD = price/exchange_rate
+            price_USD = price/exchange_rate["message"]
             price_roundoff = round(price_USD)
             return {"status": "success", "message": price_roundoff}
         except BaseException as error:
@@ -432,7 +416,7 @@ ORDER BY DAY ASC) as sub
                           'date_to': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
                           'origin': {'required': True, 'type': 'string'},
                           'destination': {'required': True, 'type': 'string'},
-                          'price': {'required': True, 'type': 'integer'},
+                          'price': {'required': True, 'type': 'integer', 'min': 0},
                           'currency': {'type': 'string'}}
             elif(category == "rates"):
                 schema = {'date_from': {'required': True, 'type': 'string', 'minlength': 10, 'maxlength': 10, "regex": "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"},
@@ -456,7 +440,8 @@ ORDER BY DAY ASC) as sub
                     message = "valid"
             else:
                 status = "error"
-                message = f"""Invalid URL Paramerters: {check_data.errors}."""
+                error_data = {i for i in check_data.errors}
+                message = f"""Invalid Paramerters found for: '{error_data}'."""
             return {"status": status, "message": message}
         except BaseException as error:
             return {"status": "error", "message": f"""Encountered Error while validating parameters: {error}"""}

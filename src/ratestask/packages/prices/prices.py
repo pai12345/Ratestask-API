@@ -221,15 +221,25 @@ class Prices(ProtoPrices):
         """
         try:
             price_usd = None
+            status = None
+            message = None
+
             if(currency == 'USD'):
                 price_usd = price
             elif(currency == None):
                 price_usd = price
             else:
                 exchange_rate = service.openexchangerates_service(currency)
-                price_usd = helper.connvert_to_USD(
-                    price, exchange_rate["message"])
-            return {"status": "success", "message": price_usd["message"]}
+                exchange_rate_status = exchange_rate["status"]
+                exchange_rate_message = exchange_rate["message"]
+
+                if(exchange_rate_status == "success"):
+                    price_usd = helper.connvert_to_USD(price, exchange_rate)
+                    return {"status": price_usd["status"], "message": price_usd["message"]}
+                else:
+                    status = "error"
+                    message = exchange_rate_message
+            return {"status": status, "message": message}
         except BaseException as error:
             return {"status": "error", "message": f"""Encountered Error for fetching price: {error}"""}
 
