@@ -1,4 +1,4 @@
-# Xeneta - rates task
+# Xeneta - Rates task
 
 Application having details, functionality and information for Xeneta rates task.
 
@@ -99,13 +99,13 @@ For executing the application.
 
 # Task 2 - Batch Processing
 
-Contains pdf file having details and solution for receiving and updating batches of tens of thousands of new prices.
+Navigate to Task2 folder for the Design and Approach doc on receiving and updating batches of tens of thousands of new prices.
 
 # Effort
 
 - Task 1:
 
-  - Total Time spent: 7 hrs
+  - Total Time spent: 7 hrs.
   - Challenges: Query optimization.
 
 - Task2:
