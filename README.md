@@ -100,14 +100,3 @@ For executing the application.
 # Task 2 - Batch Processing
 
 Navigate to Task2 folder for the Design and Approach doc on receiving and updating batches of tens of thousands of new prices.
-
-# Effort
-
-- Task 1:
-
-  - Total Time spent: 7 hrs.
-  - Challenges: Query optimization.
-
-- Task2:
-  - Total Time spent: 3 hrs.
-  - Challenges: Choosing the most efficient approach.
